@@ -5,7 +5,7 @@
     class="invoice-wrap flex flex-column"
   >
     <form @submit.prevent="submitForm" class="invoice-content">
-      <Loading v-show="loading" />
+      <loading v-show="loading" />
       <h1 v-if="!editInvoice">New Invoice</h1>
       <h1 v-else>Edit Invoice</h1>
 
@@ -206,8 +206,10 @@ import { mapMutations } from 'vuex'
 import { uid } from 'uid'
 import db from '../firebase/firebaseInit'
 import { collection, addDoc } from 'firebase/firestore'
+import Loading from './Loading.vue'
 
 export default {
+  components: { Loading },
   name: 'invoiceModal',
   created() {
     this.invoiceDateUnix = Date.now()
@@ -244,7 +246,13 @@ export default {
     }
   },
   methods: {
-    ...mapMutations(['TOGGLE_INVOICE']),
+    ...mapMutations(['TOGGLE_INVOICE', 'TOGGLE_MODAL']),
+
+    checkClick(e) {
+      if (e.target === this.$refs.invoiceWrap) {
+        this.TOGGLE_MODAL()
+      }
+    },
     closeInvoice() {
       this.TOGGLE_INVOICE()
     },
@@ -279,9 +287,13 @@ export default {
         alert('Please ensure you fill out work items')
         return
       }
+
+      this.loading = true
+
       this.calcInvoiceTotal()
 
       const dataBase = collection(db, 'invoices')
+
       await addDoc(dataBase, {
         invoiceId: uid(6),
         billerStreetAddress: this.billerStreetAddress,
@@ -307,6 +319,7 @@ export default {
         invoicePaid: null,
       })
 
+      this.loading = false
       this.TOGGLE_INVOICE()
     },
     submitForm() {

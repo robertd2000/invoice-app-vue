@@ -25,9 +25,9 @@ export default {
     closeInvoice() {
       this.TOGGLE_MODAL()
       this.TOGGLE_INVOICE()
-      // if (this.editInvoice) {
-      //   this.TOGGLE_EDIT_INVOICE();
-      // }
+      if (this.editInvoice) {
+        this.TOGGLE_EDIT_INVOICE()
+      }
     },
   },
   computed: {

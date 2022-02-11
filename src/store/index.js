@@ -1,4 +1,4 @@
-import { collection, getDocs } from 'firebase/firestore'
+import { collection, deleteDoc, doc, getDocs } from 'firebase/firestore'
 import { createStore } from 'vuex'
 import db from '../firebase/firebaseInit'
 
@@ -8,6 +8,8 @@ export default createStore({
     invoiceModal: null,
     modalActive: null,
     invoicesLoaded: null,
+    currentInvoiceArray: null,
+    editInvoice: null,
   },
   mutations: {
     TOGGLE_INVOICE(state) {
@@ -21,6 +23,19 @@ export default createStore({
     },
     INVOICES_LOADED(state) {
       state.invoicesLoaded = true
+    },
+    SET_CURRENT_INVOICE(state, payload) {
+      state.currentInvoiceArray = state.invoiceData.filter((invoice) => {
+        return invoice.invoiceId === payload
+      })
+    },
+    TOGGLE_EDIT_INVOICE(state) {
+      state.editInvoice = !state.editInvoice
+    },
+    DELETE_INVOICE(state, payload) {
+      state.invoiceData = state.invoiceData.filter(
+        (invoice) => invoice.docId !== payload
+      )
     },
   },
   actions: {
@@ -59,6 +74,18 @@ export default createStore({
         }
       })
       commit('INVOICES_LOADED')
+    },
+    async UPDATE_INVOICE({ commit, dispatch }, { docId, routeId }) {
+      commit('DELETE_INVOICE', docId)
+      await dispatch('GET_INVOICES')
+      commit('TOGGLE_INVOICE')
+      commit('TOGGLE_EDIT_INVOICE')
+      commit('SET_CURRENT_INVOICE', routeId)
+    },
+    async DELETE_INVOICE({ commit }, docId) {
+      const invoice = doc(db, 'invoices', docId)
+      await deleteDoc(invoice)
+      commit('DELETE_INVOICE', docId)
     },
   },
   modules: {},

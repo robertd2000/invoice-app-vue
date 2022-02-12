@@ -1,4 +1,10 @@
-import { collection, deleteDoc, doc, getDocs } from 'firebase/firestore'
+import {
+  collection,
+  deleteDoc,
+  doc,
+  getDocs,
+  updateDoc,
+} from 'firebase/firestore'
 import { createStore } from 'vuex'
 import db from '../firebase/firebaseInit'
 
@@ -37,6 +43,23 @@ export default createStore({
         (invoice) => invoice.docId !== payload
       )
     },
+    UPDATE_STATUS_TO_PAID(state, payload) {
+      state.invoiceData.forEach((invoice) => {
+        if (invoice.docId === payload) {
+          invoice.invoicePaid = true
+          invoice.invoicePending = false
+        }
+      })
+    },
+    UPDATE_STATUS_TO_PENDING(state, payload) {
+      state.invoiceData.forEach((invoice) => {
+        if (invoice.docId === payload) {
+          invoice.invoicePaid = false
+          invoice.invoicePending = true
+          invoice.invoiceDraft = false
+        }
+      })
+    },
   },
   actions: {
     async GET_INVOICES({ commit, state }) {
@@ -44,7 +67,7 @@ export default createStore({
       const results = await getDocs(getData)
 
       results.forEach((doc) => {
-        if (!state.invoiceData.some((invoice) => invoice.docId === doc.docId)) {
+        if (!state.invoiceData.some((invoice) => invoice.docId === doc.id)) {
           const data = {
             docId: doc.id,
             invoiceId: doc.data().invoiceId,
@@ -86,6 +109,23 @@ export default createStore({
       const invoice = doc(db, 'invoices', docId)
       await deleteDoc(invoice)
       commit('DELETE_INVOICE', docId)
+    },
+    async UPDATE_STATUS_TO_PAID({ commit }, docId) {
+      const invoice = doc(db, 'invoices', docId)
+      await updateDoc(invoice, {
+        invoicePaid: true,
+        invoicePending: false,
+      })
+      commit('UPDATE_STATUS_TO_PAID', docId)
+    },
+    async UPDATE_STATUS_TO_PENDING({ commit }, docId) {
+      const invoice = doc(db, 'invoices', docId)
+      await updateDoc(invoice, {
+        invoicePaid: false,
+        invoicePending: true,
+        invoiceDraft: false,
+      })
+      commit('UPDATE_STATUS_TO_PENDING', docId)
     },
   },
   modules: {},

@@ -4,17 +4,23 @@
     <div class="header flex">
       <div class="left flex flex-column">
         <h1>Invoices</h1>
-        <span>There are 4 total invoices</span>
+        <span v-if="invoiceData.length > 0"
+          >There are {{ invoiceData.length }} total invoices</span
+        >
+        <span v-else>There no invoices</span>
       </div>
       <div class="right flex">
         <div @click="toggleFilterMenu" class="filter flex">
-          <span>Filter by status</span>
+          <span
+            >Filter by status
+            <span v-if="filteredInvoice">:{{ filteredInvoice }}</span></span
+          >
           <img src="@/assets/icon-arrow-down.svg" alt="" />
           <ul v-show="filterMenu" class="filter-menu">
-            <li>Draft</li>
-            <li>Pending</li>
-            <li>Paid</li>
-            <li>Clear Filter</li>
+            <li @click="filteredInvoices">Draft</li>
+            <li @click="filteredInvoices">Pending</li>
+            <li @click="filteredInvoices">Paid</li>
+            <li @click="filteredInvoices">Clear Filter</li>
           </ul>
         </div>
         <div @click="newInvoice" class="button flex">
@@ -28,7 +34,7 @@
     <!-- Invoices -->
     <div v-if="invoiceData.length > 0">
       <invoice
-        v-for="(invoice, index) in invoiceData"
+        v-for="(invoice, index) in filteredData"
         :invoice="invoice"
         :key="index"
       />
@@ -52,6 +58,7 @@ export default {
   data() {
     return {
       filterMenu: null,
+      filteredInvoice: null,
     }
   },
   components: { Invoice },
@@ -59,13 +66,35 @@ export default {
     ...mapMutations(['TOGGLE_INVOICE']),
     newInvoice() {
       this.TOGGLE_INVOICE()
+      console.log(this.invoiceData)
     },
     toggleFilterMenu() {
       this.filterMenu = !this.filterMenu
     },
+    filteredInvoices(e) {
+      if (e.target.innerText === 'Clear Filter') {
+        this.filteredInvoice = null
+        return
+      }
+      this.filteredInvoice = e.target.innerText
+    },
   },
   computed: {
     ...mapState(['invoiceData']),
+    filteredData() {
+      return this.invoiceData.filter((invoice) => {
+        if (this.filteredInvoice === 'Draft') {
+          return invoice.invoiceDraft === true
+        }
+        if (this.filteredInvoice === 'Pending') {
+          return invoice.invoicePending === true
+        }
+        if (this.filteredInvoice === 'Paid') {
+          return invoice.invoicePaid === true
+        }
+        return invoice
+      })
+    },
   },
 }
 </script>

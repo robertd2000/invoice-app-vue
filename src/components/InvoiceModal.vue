@@ -5,7 +5,7 @@
     class="invoice-wrap flex flex-column"
   >
     <form @submit.prevent="submitForm" class="invoice-content">
-      <loading v-show="loading" />
+      <Loading v-show="loading" />
       <h1 v-if="!editInvoice">New Invoice</h1>
       <h1 v-else>Edit Invoice</h1>
 
@@ -274,7 +274,7 @@ export default {
   methods: {
     ...mapMutations(['TOGGLE_INVOICE', 'TOGGLE_MODAL', 'TOGGLE_EDIT_INVOICE']),
 
-    ...mapActions(['UPDATE_INVOICE']),
+    ...mapActions(['UPDATE_INVOICE', 'GET_INVOICES']),
 
     checkClick(e) {
       if (e.target === this.$refs.invoiceWrap) {
@@ -352,6 +352,8 @@ export default {
 
       this.loading = false
       this.TOGGLE_INVOICE()
+      // this.invoiceItemList = []
+      this.GET_INVOICES()
     },
     async updateInvoice() {
       if (this.invoiceItemList.length <= 0) {
